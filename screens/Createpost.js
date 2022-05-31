@@ -14,17 +14,31 @@ import {
 import { RFValue } from "react-native-responsive-fontsize";
 import DropDownPicker from "react-native-dropdown-picker";
 
+import firebase from "firebase";
+
 export default class CreatePost extends Component {
  constructor(props) {
  super(props);
  this.state = {
  previewImage: "image_1",
- dropdownHeight: 40
+ dropdownHeight: 40,
+ light_theme: true
  };
  }
 
  componentDidMount() {
+ this.fetchUser();
+ }
 
+ fetchUser = () => {
+ let theme;
+ firebase
+ .database()
+ .ref("/users/" + firebase.auth().currentUser.uid)
+ .on("value", (snapshot) => {
+ theme = snapshot.val().current_theme
+ this.setState({ light_theme: theme === "light" })
+ })
  }
 
  render() {
@@ -38,7 +52,7 @@ export default class CreatePost extends Component {
  image_7: require("../assets/image_7.jpg")
  };
  return (
- <View style={styles.container}>
+ <View style={this.state.light_theme ? styles.containerLight : styles.container}>
  <SafeAreaView style={styles.droidSafeArea} />
  <View style={styles.appTitle}>
  <View style={styles.appIcon}>
@@ -48,7 +62,7 @@ export default class CreatePost extends Component {
  ></Image>
  </View>
  <View style={styles.appTitleTextContainer}>
- <Text style={styles.appTitleText}>New Post</Text>
+ <Text style={this.state.light_theme ? styles.appTitleTextLight : styles.appTitleText}>New Post</Text>
  </View>
  </View>
  <View style={styles.fieldsContainer}>
@@ -84,12 +98,12 @@ export default class CreatePost extends Component {
  itemStyle={{
  justifyContent: "flex-start"
  }}
- dropDownStyle={{ backgroundColor: "#2a2a2a" }}
+ dropDownStyle={{ backgroundColor: this.state.light_theme ? "#eee" : "#2a2a2a" }}
  labelStyle={{
- color: "white"
+ color: this.state.light_theme ? "black" : "white"
  }}
  arrowStyle={{
- color: "white"
+ color: this.state.light_theme ? "black" : "white"
  }}
  onChangeItem={item =>
  this.setState({
@@ -100,10 +114,10 @@ export default class CreatePost extends Component {
  </View>
 
  <TextInput
- style={styles.inputFont}
+ style={this.state.light_theme ? styles.inputFontLight : styles.inputFont}
  onChangeText={caption => this.setState({ caption })}
  placeholder={"Caption"}
- placeholderTextColor="white"
+ placeholderTextColor={this.state.light_theme ? "black" : "white"}
  />
  </ScrollView>
  </View>
@@ -117,6 +131,10 @@ const styles = StyleSheet.create({
  container: {
  flex: 1,
  backgroundColor: "black"
+ },
+ containerLight: {
+ flex: 1,
+ backgroundColor: "white"
  },
  droidSafeArea: {
  marginTop: Platform.OS === "android" ? StatusBar.currentHeight : RFValue(35)
@@ -143,6 +161,11 @@ const styles = StyleSheet.create({
  color: "white",
  fontSize: RFValue(28)
  },
+ appTitleTextLight: {
+ color: "black",
+ fontSize: 28,
+ paddingLeft: 20
+ },
  fieldsContainer: {
  flex: 0.85
  },
@@ -161,5 +184,13 @@ const styles = StyleSheet.create({
  borderRadius: RFValue(10),
  paddingLeft: RFValue(10),
  color: "white"
- }
+ },
+ inputFontLight: {
+ height: 40,
+ borderColor: 'black',
+ borderWidth: 1,
+ borderRadius: 10,
+ paddingLeft: 10,
+ color: "black"
+ },
 });
